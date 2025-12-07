@@ -1,10 +1,8 @@
 import type { Payload } from 'payload'
 
 import config from '@payload-config'
-import { createPayloadRequest, getPayload } from 'payload'
+import { getPayload } from 'payload'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
-
-import { customEndpointHandler } from '../src/endpoints/customEndpointHandler.js'
 
 let payload: Payload
 
@@ -16,37 +14,30 @@ beforeAll(async () => {
   payload = await getPayload({ config })
 })
 
-describe('Plugin integration tests', () => {
-  test('should query custom endpoint added by plugin', async () => {
-    const request = new Request('http://localhost:3000/api/my-plugin-endpoint', {
-      method: 'GET',
-    })
-
-    const payloadRequest = await createPayloadRequest({ config, request })
-    const response = await customEndpointHandler(payloadRequest)
-    expect(response.status).toBe(200)
-
-    const data = await response.json()
-    expect(data).toMatchObject({
-      message: 'Hello from custom endpoint',
-    })
-  })
-
-  test('can create post with custom text field added by plugin', async () => {
+describe('Payload Translate Plugin', () => {
+  test('can create post with localized fields', async () => {
     const post = await payload.create({
       collection: 'posts',
       data: {
-        addedByPlugin: 'added by plugin',
+        excerpt: 'This is a test post',
+        title: 'Hello World',
       },
+      locale: 'en',
     })
-    expect(post.addedByPlugin).toBe('added by plugin')
+    expect(post.title).toBe('Hello World')
+    expect(post.excerpt).toBe('This is a test post')
   })
 
-  test('plugin creates and seeds plugin-collection', async () => {
-    expect(payload.collections['plugin-collection']).toBeDefined()
+  test('localization config is present', () => {
+    const { localization } = payload.config
+    expect(localization).toBeDefined()
+    expect(localization?.defaultLocale).toBe('en')
+  })
 
-    const { docs } = await payload.find({ collection: 'plugin-collection' })
-
-    expect(docs).toHaveLength(1)
+  test('translate endpoint is registered', () => {
+    const endpoints = payload.config.endpoints
+    const translateEndpoint = endpoints?.find((e) => e.path === '/translate')
+    expect(translateEndpoint).toBeDefined()
+    expect(translateEndpoint?.method).toBe('post')
   })
 })

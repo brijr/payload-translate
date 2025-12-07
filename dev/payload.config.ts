@@ -38,7 +38,24 @@ const buildConfigWithMemoryDB = async () => {
     collections: [
       {
         slug: 'posts',
-        fields: [],
+        fields: [
+          {
+            name: 'title',
+            type: 'text',
+            localized: true,
+            required: true,
+          },
+          {
+            name: 'excerpt',
+            type: 'textarea',
+            localized: true,
+          },
+          {
+            name: 'content',
+            type: 'richText',
+            localized: true,
+          },
+        ],
       },
       {
         slug: 'media',
@@ -54,14 +71,21 @@ const buildConfigWithMemoryDB = async () => {
     }),
     editor: lexicalEditor(),
     email: testEmailAdapter,
+    localization: {
+      defaultLocale: 'en',
+      locales: [
+        { code: 'en', label: 'English' },
+        { code: 'es', label: 'Spanish' },
+        { code: 'fr', label: 'French' },
+      ],
+    },
     onInit: async (payload) => {
       await seed(payload)
     },
     plugins: [
       payloadTranslate({
-        collections: {
-          posts: true,
-        },
+        apiKey: process.env.GEMINI_API_KEY || '',
+        collections: ['posts'],
       }),
     ],
     secret: process.env.PAYLOAD_SECRET || 'test-secret_key',

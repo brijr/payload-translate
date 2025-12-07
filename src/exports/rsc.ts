@@ -1,1 +1,2 @@
-export { BeforeDashboardServer } from '../components/BeforeDashboardServer.js'
+// RSC exports - currently not used by this plugin
+export {}
