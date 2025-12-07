@@ -122,16 +122,18 @@ export function extractTranslatableFields(
         break
 
       case 'richText':
-        if (value && typeof value === 'object' && hasLexicalContent(value)) {
-          // For rich text, we extract individual text nodes
-          const richTextTexts = extractLexicalTexts(value)
-          if (richTextTexts.length > 0) {
-            // Store the serialized rich text for translation
-            translatableFields.push({
-              type: 'richText',
-              path: fieldPath,
-              value: JSON.stringify(value),
-            })
+        if (value && typeof value === 'object') {
+          // Extract each text node individually with its path in the Lexical tree
+          const textNodes = extractLexicalTextNodes(value)
+          for (const textNode of textNodes) {
+            if (textNode.text.trim()) {
+              translatableFields.push({
+                type: 'richText',
+                lexicalPath: textNode.path,
+                path: fieldPath,
+                value: textNode.text,
+              })
+            }
           }
         }
         break
@@ -160,34 +162,42 @@ interface LexicalNode {
   type?: string
 }
 
-function extractLexicalTexts(editorState: unknown): string[] {
-  const texts: string[] = []
+interface LexicalTextNode {
+  path: string
+  text: string
+}
+
+/**
+ * Extracts all text nodes from a Lexical editor state with their paths.
+ * This allows us to translate each text node individually and apply
+ * translations back to the exact same location.
+ */
+function extractLexicalTextNodes(editorState: unknown): LexicalTextNode[] {
+  const textNodes: LexicalTextNode[] = []
 
   if (!editorState || typeof editorState !== 'object') {
-    return texts
+    return textNodes
   }
 
   const state = editorState as { root?: LexicalNode }
-  if (!state.root?.children) {
-    return texts
+  if (!state.root) {
+    return textNodes
   }
 
-  function traverse(node: LexicalNode) {
-    if (node.type === 'text' && node.text) {
-      texts.push(node.text)
+  function traverse(node: LexicalNode, currentPath: string): void {
+    if (node.type === 'text' && typeof node.text === 'string') {
+      textNodes.push({
+        path: currentPath,
+        text: node.text,
+      })
     }
-    if (node.children) {
-      for (const child of node.children) {
-        traverse(child)
-      }
+    if (node.children && Array.isArray(node.children)) {
+      node.children.forEach((child, index) => {
+        traverse(child, `${currentPath}.children.${index}`)
+      })
     }
   }
 
-  traverse(state.root)
-  return texts
-}
-
-function hasLexicalContent(editorState: unknown): boolean {
-  const texts = extractLexicalTexts(editorState)
-  return texts.some((text) => text.trim().length > 0)
+  traverse(state.root, 'root')
+  return textNodes
 }

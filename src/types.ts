@@ -30,6 +30,11 @@ export type TranslateResponse = {
 }
 
 export type TranslatableField = {
+  /**
+   * For richText fields, the path within the Lexical structure to the text node
+   * e.g., "root.children.0.children.1"
+   */
+  lexicalPath?: string
   path: string
   type: 'richText' | 'text' | 'textarea'
   value: string
