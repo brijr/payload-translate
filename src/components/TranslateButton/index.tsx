@@ -7,7 +7,6 @@ import {
   Modal,
   ReactSelect,
   type ReactSelectOption,
-  SwapIcon,
   useConfig,
   useDocumentInfo,
   useLocale,
@@ -99,10 +98,7 @@ export const TranslateButton: React.FC = () => {
       <Button
         buttonStyle="secondary"
         disabled={isTranslating}
-        icon={<SwapIcon />}
-        iconPosition="left"
         onClick={() => openModal(MODAL_SLUG)}
-        size="small"
       >
         {isTranslating ? 'Translating...' : 'Translate'}
       </Button>
