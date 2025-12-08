@@ -1,0 +1,44 @@
+.translate-modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+
+  &__wrapper {
+    background: var(--theme-bg);
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  }
+
+  &__content {
+    margin-bottom: 24px;
+
+    h3 {
+      margin: 0 0 8px 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0 0 16px 0;
+      color: var(--theme-elevation-600);
+    }
+  }
+
+  &__select {
+    margin-top: 8px;
+  }
+
+  &__controls {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+}

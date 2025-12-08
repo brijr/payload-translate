@@ -4,7 +4,10 @@ import type { Locale } from 'payload'
 
 import {
   Button,
-  ConfirmationModal,
+  Modal,
+  ReactSelect,
+  type ReactSelectOption,
+  SwapIcon,
   useConfig,
   useDocumentInfo,
   useLocale,
@@ -13,15 +16,17 @@ import {
 import React, { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
+import './index.scss'
+
 const MODAL_SLUG = 'translate-document-modal'
 
 export const TranslateButton: React.FC = () => {
   const { config } = useConfig()
   const { id, collectionSlug } = useDocumentInfo()
   const locale = useLocale()
-  const { openModal } = useModal()
+  const { closeModal, openModal } = useModal()
   const [isTranslating, setIsTranslating] = useState(false)
-  const [selectedLocale, setSelectedLocale] = useState<string>('')
+  const [selectedLocale, setSelectedLocale] = useState<null | ReactSelectOption>(null)
 
   // Get available locales (exclude current locale)
   const locales = config.localization?.locales || []
@@ -36,6 +41,7 @@ export const TranslateButton: React.FC = () => {
     }
 
     setIsTranslating(true)
+    closeModal(MODAL_SLUG)
 
     try {
       const response = await fetch(`${config.serverURL}${config.routes.api}/translate`, {
@@ -43,7 +49,7 @@ export const TranslateButton: React.FC = () => {
           collection: collectionSlug,
           documentId: id,
           sourceLocale: locale.code,
-          targetLocale: selectedLocale,
+          targetLocale: selectedLocale.value,
         }),
         credentials: 'include',
         headers: {
@@ -64,20 +70,21 @@ export const TranslateButton: React.FC = () => {
       console.error('Translation error:', error)
     } finally {
       setIsTranslating(false)
-      setSelectedLocale('')
+      setSelectedLocale(null)
     }
-  }, [collectionSlug, id, locale, selectedLocale, config])
+  }, [closeModal, collectionSlug, config, id, locale, selectedLocale])
 
   const handleCancel = useCallback(() => {
-    setSelectedLocale('')
-  }, [])
+    setSelectedLocale(null)
+    closeModal(MODAL_SLUG)
+  }, [closeModal])
 
   // Don't render if no localization, no other locales, or document not saved yet
   if (!config.localization || availableTargetLocales.length === 0 || !id) {
     return null
   }
 
-  const localeOptions = availableTargetLocales.map((l: Locale | string) => {
+  const localeOptions: ReactSelectOption[] = availableTargetLocales.map((l: Locale | string) => {
     if (typeof l === 'string') {
       return { label: l.toUpperCase(), value: l }
     }
@@ -92,44 +99,40 @@ export const TranslateButton: React.FC = () => {
       <Button
         buttonStyle="secondary"
         disabled={isTranslating}
+        icon={<SwapIcon />}
+        iconPosition="left"
         onClick={() => openModal(MODAL_SLUG)}
+        size="small"
       >
         {isTranslating ? 'Translating...' : 'Translate'}
       </Button>
-      <ConfirmationModal
-        body={
-          <>
-            Translate content from <strong>{locale?.code?.toUpperCase()}</strong> to:{' '}
-            <select
-              onChange={(e) => setSelectedLocale(e.target.value)}
-              style={{
-                backgroundColor: 'var(--theme-elevation-0)',
-                border: '1px solid var(--theme-elevation-150)',
-                borderRadius: '4px',
-                color: 'var(--theme-elevation-1000)',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                marginTop: '8px',
-                padding: '8px 12px',
-              }}
-              value={selectedLocale}
-            >
-              <option value="">Select locale...</option>
-              {localeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </>
-        }
-        confirmingLabel="Translating..."
-        confirmLabel={isTranslating ? 'Translating...' : 'Translate'}
-        heading="Translate Document"
-        modalSlug={MODAL_SLUG}
-        onCancel={handleCancel}
-        onConfirm={handleTranslate}
-      />
+      <Modal className="translate-modal" slug={MODAL_SLUG}>
+        <div className="translate-modal__wrapper">
+          <div className="translate-modal__content">
+            <h3>Translate Document</h3>
+            <p>
+              Translate content from <strong>{locale?.code?.toUpperCase()}</strong> to:
+            </p>
+            <div className="translate-modal__select">
+              <ReactSelect
+                isClearable
+                onChange={(option) => setSelectedLocale(option as ReactSelectOption)}
+                options={localeOptions}
+                placeholder="Select target locale..."
+                value={selectedLocale}
+              />
+            </div>
+          </div>
+          <div className="translate-modal__controls">
+            <Button buttonStyle="secondary" onClick={handleCancel} size="medium">
+              Cancel
+            </Button>
+            <Button disabled={!selectedLocale} onClick={handleTranslate} size="medium">
+              Translate
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </>
   )
 }
