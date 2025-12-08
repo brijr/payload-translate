@@ -5,7 +5,7 @@ type TranslateWithGeminiArgs = {
 } & GeminiTranslationRequest
 
 const GEMINI_API_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
 
 export async function translateWithGemini({
   apiKey,
@@ -44,10 +44,15 @@ export async function translateWithGemini({
   }
 
   const result = await response.json()
-  const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text
+  console.log('Gemini response:', JSON.stringify(result, null, 2))
+
+  // Gemini 2.5 may have multiple parts (thinking + response), find the text part
+  const parts = result.candidates?.[0]?.content?.parts || []
+  const textPart = parts.find((p: { text?: string }) => p.text !== undefined)
+  const generatedText = textPart?.text
 
   if (!generatedText) {
-    throw new Error('No translation returned from Gemini')
+    throw new Error(`No translation returned from Gemini. Response: ${JSON.stringify(result)}`)
   }
 
   return parseTranslationResponse(generatedText, texts.length)
