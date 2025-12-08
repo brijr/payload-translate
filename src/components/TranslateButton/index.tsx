@@ -2,7 +2,7 @@
 
 import type { Locale } from 'payload'
 
-import { ConfirmationModal, useConfig, useDocumentInfo, useLocale, useModal } from '@payloadcms/ui'
+import { Button, ConfirmationModal, useConfig, useDocumentInfo, useLocale, useModal } from '@payloadcms/ui'
 import React, { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -72,31 +72,28 @@ export const TranslateButton: React.FC = () => {
 
   const localeOptions = availableTargetLocales.map((l: Locale | string) => {
     if (typeof l === 'string') {
-      return { code: l, label: l.toUpperCase() }
+      return { label: l.toUpperCase(), value: l }
     }
     return {
-      code: l.code,
       label: typeof l.label === 'string' ? l.label : l.code.toUpperCase(),
+      value: l.code,
     }
   })
 
   return (
     <>
-      <button
-        className="btn btn--style-secondary btn--size-small"
+      <Button
+        buttonStyle="secondary"
         disabled={isTranslating}
         onClick={() => openModal(MODAL_SLUG)}
-        style={{ marginRight: '8px' }}
-        type="button"
+        size="small"
       >
         {isTranslating ? 'Translating...' : 'Translate'}
-      </button>
+      </Button>
       <ConfirmationModal
         body={
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <p style={{ margin: 0 }}>
-              Translate content from <strong>{locale?.code?.toUpperCase()}</strong> to:
-            </p>
+          <>
+            Translate content from <strong>{locale?.code?.toUpperCase()}</strong> to:{' '}
             <select
               onChange={(e) => setSelectedLocale(e.target.value)}
               style={{
@@ -106,19 +103,19 @@ export const TranslateButton: React.FC = () => {
                 color: 'var(--theme-elevation-1000)',
                 cursor: 'pointer',
                 fontSize: '1rem',
-                padding: '10px 12px',
-                width: '100%',
+                marginTop: '8px',
+                padding: '8px 12px',
               }}
               value={selectedLocale}
             >
-              <option value="">Select target locale...</option>
+              <option value="">Select locale...</option>
               {localeOptions.map((option) => (
-                <option key={option.code} value={option.code}>
+                <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
             </select>
-          </div>
+          </>
         }
         confirmingLabel="Translating..."
         confirmLabel={isTranslating ? 'Translating...' : 'Translate'}
