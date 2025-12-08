@@ -18,7 +18,13 @@ export const translateHandler: PayloadHandler = async (req) => {
     }
 
     // Parse request body
-    const body = (await req.json()) as TranslateRequestBody
+    const body = (await req.json?.()) as TranslateRequestBody | undefined
+    if (!body) {
+      return Response.json(
+        { error: 'Invalid request body', success: false } as TranslateResponse,
+        { status: 400 },
+      )
+    }
     const { collection, documentId, sourceLocale, targetLocale } = body
 
     // Validate request

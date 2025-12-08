@@ -28,7 +28,8 @@ export const TranslateButton: React.FC = () => {
   const [selectedLocale, setSelectedLocale] = useState<null | ReactSelectOption>(null)
 
   // Get available locales (exclude current locale)
-  const locales = config.localization?.locales || []
+  const localization = config.localization
+  const locales = localization ? localization.locales : []
   const availableTargetLocales = locales.filter((l: Locale | string) => {
     const code = typeof l === 'string' ? l : l.code
     return code !== locale?.code
@@ -115,7 +116,7 @@ export const TranslateButton: React.FC = () => {
                 onChange={(option) => setSelectedLocale(option as ReactSelectOption)}
                 options={localeOptions}
                 placeholder="Select target locale..."
-                value={selectedLocale}
+                value={selectedLocale ?? undefined}
               />
             </div>
           </div>

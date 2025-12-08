@@ -35,8 +35,9 @@ export function extractTranslatableFields(
     // Skip if no value
     if (value === undefined || value === null) {continue}
 
-    // Only process localized fields
-    if (!field.localized) {
+    // Only process localized fields (UIField doesn't have localized property)
+    const isLocalized = 'localized' in field && field.localized
+    if (!isLocalized) {
       // But still recurse into nested structures for localized children
       if (field.type === 'group' && 'fields' in field && typeof value === 'object') {
         const groupFields = extractTranslatableFields(
