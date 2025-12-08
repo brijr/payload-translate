@@ -1,7 +1,7 @@
 {
   "name": "payload-translate",
   "version": "1.0.0",
-  "description": "AI-powered translation plugin for Payload CMS using Google Gemini",
+  "description": "AI-powered translation plugin for Payload",
   "license": "MIT",
   "author": "Bridger Tower",
   "repository": {
