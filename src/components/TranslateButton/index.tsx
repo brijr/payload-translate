@@ -2,7 +2,14 @@
 
 import type { Locale } from 'payload'
 
-import { Button, ConfirmationModal, useConfig, useDocumentInfo, useLocale, useModal } from '@payloadcms/ui'
+import {
+  Button,
+  ConfirmationModal,
+  useConfig,
+  useDocumentInfo,
+  useLocale,
+  useModal,
+} from '@payloadcms/ui'
 import React, { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -86,7 +93,6 @@ export const TranslateButton: React.FC = () => {
         buttonStyle="secondary"
         disabled={isTranslating}
         onClick={() => openModal(MODAL_SLUG)}
-        size="small"
       >
         {isTranslating ? 'Translating...' : 'Translate'}
       </Button>
