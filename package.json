@@ -1,8 +1,27 @@
 {
   "name": "payload-translate",
   "version": "1.0.0",
-  "description": "A blank template to get started with Payload 3.0",
+  "description": "AI-powered translation plugin for Payload CMS using Google Gemini",
   "license": "MIT",
+  "author": "Bridger Tower",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brijr/payload-translate.git"
+  },
+  "homepage": "https://github.com/brijr/payload-translate#readme",
+  "bugs": {
+    "url": "https://github.com/brijr/payload-translate/issues"
+  },
+  "keywords": [
+    "payload",
+    "payloadcms",
+    "plugin",
+    "translation",
+    "i18n",
+    "localization",
+    "gemini",
+    "ai"
+  ],
   "type": "module",
   "exports": {
     ".": {
