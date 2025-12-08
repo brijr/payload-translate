@@ -44,9 +44,8 @@ export async function translateWithGemini({
   }
 
   const result = await response.json()
-  console.log('Gemini response:', JSON.stringify(result, null, 2))
 
-  // Gemini 2.5 may have multiple parts (thinking + response), find the text part
+  // Handle response - find the text part
   const parts = result.candidates?.[0]?.content?.parts || []
   const textPart = parts.find((p: { text?: string }) => p.text !== undefined)
   const generatedText = textPart?.text
