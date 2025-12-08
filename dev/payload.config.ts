@@ -18,7 +18,8 @@ if (!process.env.ROOT_DIR) {
 }
 
 const buildConfigWithMemoryDB = async () => {
-  if (process.env.NODE_ENV === 'test') {
+  // Use in-memory MongoDB for development and testing (no external DB needed)
+  if (!process.env.DATABASE_URI) {
     const memoryDB = await MongoMemoryReplSet.create({
       replSet: {
         count: 3,
