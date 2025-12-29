@@ -19,7 +19,7 @@ export type TranslateRequestBody = {
   collection: string
   documentId: number | string
   sourceLocale: string
-  targetLocale: string
+  targetLocales: string[]
 }
 
 export type TranslateResponse = {
@@ -27,6 +27,7 @@ export type TranslateResponse = {
   message?: string
   success: boolean
   translatedFields?: number
+  translatedLocales?: number
 }
 
 export type TranslatableField = {

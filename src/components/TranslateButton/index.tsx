@@ -43,13 +43,21 @@ export const TranslateButton: React.FC = () => {
     setIsTranslating(true)
     closeModal(MODAL_SLUG)
 
+    // Determine target locales based on selection
+    const targetLocales =
+      selectedLocale.value === '__all__'
+        ? availableTargetLocales.map((l: Locale | string) =>
+            typeof l === 'string' ? l : l.code,
+          )
+        : [selectedLocale.value]
+
     try {
       const response = await fetch(`${config.serverURL}${config.routes.api}/translate`, {
         body: JSON.stringify({
           collection: collectionSlug,
           documentId: id,
           sourceLocale: locale.code,
-          targetLocale: selectedLocale.value,
+          targetLocales,
         }),
         credentials: 'include',
         headers: {
@@ -72,7 +80,7 @@ export const TranslateButton: React.FC = () => {
       setIsTranslating(false)
       setSelectedLocale(null)
     }
-  }, [closeModal, collectionSlug, config, id, locale, selectedLocale])
+  }, [availableTargetLocales, closeModal, collectionSlug, config, id, locale, selectedLocale])
 
   const handleCancel = useCallback(() => {
     setSelectedLocale(null)
@@ -84,15 +92,18 @@ export const TranslateButton: React.FC = () => {
     return null
   }
 
-  const localeOptions: ReactSelectOption[] = availableTargetLocales.map((l: Locale | string) => {
-    if (typeof l === 'string') {
-      return { label: l.toUpperCase(), value: l }
-    }
-    return {
-      label: typeof l.label === 'string' ? l.label : l.code.toUpperCase(),
-      value: l.code,
-    }
-  })
+  const localeOptions: ReactSelectOption[] = [
+    { label: 'Translate to All', value: '__all__' },
+    ...availableTargetLocales.map((l: Locale | string) => {
+      if (typeof l === 'string') {
+        return { label: l.toUpperCase(), value: l }
+      }
+      return {
+        label: typeof l.label === 'string' ? l.label : l.code.toUpperCase(),
+        value: l.code,
+      }
+    }),
+  ]
 
   return (
     <>

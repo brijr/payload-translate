@@ -25,10 +25,10 @@ export const translateHandler: PayloadHandler = async (req) => {
         { status: 400 },
       )
     }
-    const { collection, documentId, sourceLocale, targetLocale } = body
+    const { collection, documentId, sourceLocale, targetLocales } = body
 
     // Validate request
-    if (!collection || !documentId || !sourceLocale || !targetLocale) {
+    if (!collection || !documentId || !sourceLocale || !targetLocales || targetLocales.length === 0) {
       return Response.json(
         { error: 'Missing required fields', success: false } as TranslateResponse,
         { status: 400 },
@@ -79,39 +79,47 @@ export const translateHandler: PayloadHandler = async (req) => {
         message: 'No translatable fields found',
         success: true,
         translatedFields: 0,
+        translatedLocales: 0,
       } as TranslateResponse)
     }
 
     // Prepare texts for translation
     const texts = translatableFields.map((f) => f.value)
 
-    // Translate with Gemini
-    const translations = await translateWithGemini({
-      apiKey,
-      sourceLocale,
-      targetLocale,
-      texts,
-    })
+    // Translate to each target locale
+    for (const targetLocale of targetLocales) {
+      // Translate with Gemini
+      const translations = await translateWithGemini({
+        apiKey,
+        sourceLocale,
+        targetLocale,
+        texts,
+      })
 
-    // Apply translations to document
-    const updatedData = applyTranslations(
-      document as Record<string, unknown>,
-      translatableFields,
-      translations,
-    )
+      // Apply translations to document
+      const updatedData = applyTranslations(
+        document as Record<string, unknown>,
+        translatableFields,
+        translations,
+      )
 
-    // Update document in target locale
-    await payload.update({
-      id: documentId,
-      collection,
-      data: updatedData,
-      locale: targetLocale,
-    })
+      // Remove all system/immutable fields recursively
+      const dataToUpdate = removeSystemFields(updatedData)
+
+      // Update document in target locale
+      await payload.update({
+        id: documentId,
+        collection,
+        data: dataToUpdate,
+        locale: targetLocale,
+      })
+    }
 
     return Response.json({
-      message: `Successfully translated ${translatableFields.length} field(s)`,
+      message: `Successfully translated ${translatableFields.length} field(s) to ${targetLocales.length} locale(s)`,
       success: true,
       translatedFields: translatableFields.length,
+      translatedLocales: targetLocales.length,
     } as TranslateResponse)
   } catch (error) {
     console.error('Translation error:', error)
@@ -123,4 +131,35 @@ export const translateHandler: PayloadHandler = async (req) => {
       { status: 500 },
     )
   }
+}
+
+/**
+ * Recursively removes system fields (id, createdAt, updatedAt) from an object
+ */
+function removeSystemFields(obj: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {}
+
+  for (const [key, value] of Object.entries(obj)) {
+    // Skip system fields at any level
+    if (key === 'id' || key === 'createdAt' || key === 'updatedAt') {
+      continue
+    }
+
+    if (Array.isArray(value)) {
+      // Process array items
+      result[key] = value.map((item) => {
+        if (item && typeof item === 'object' && !Array.isArray(item)) {
+          return removeSystemFields(item as Record<string, unknown>)
+        }
+        return item
+      })
+    } else if (value && typeof value === 'object') {
+      // Recursively process nested objects
+      result[key] = removeSystemFields(value as Record<string, unknown>)
+    } else {
+      result[key] = value
+    }
+  }
+
+  return result
 }
