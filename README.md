@@ -19,7 +19,7 @@ import { payloadTranslate } from 'payload-translate'
 export default buildConfig({
   plugins: [
     payloadTranslate({
-      apiKey: process.env.GEMINI_API_KEY,
+      apiKey: process.env.GEMINI_API_KEY!,
       collections: ['posts', 'pages'],
     }),
   ],
