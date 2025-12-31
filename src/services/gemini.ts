@@ -5,7 +5,7 @@ type TranslateWithGeminiArgs = {
 } & GeminiTranslationRequest
 
 const GEMINI_API_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent'
 
 export async function translateWithGemini({
   apiKey,
