@@ -134,14 +134,32 @@ export const translateHandler: PayloadHandler = async (req) => {
 }
 
 /**
- * Recursively removes system fields (id, createdAt, updatedAt) from an object
+ * Check if an object looks like a Lexical editor state (has root with children)
+ */
+function isLexicalState(obj: Record<string, unknown>): boolean {
+  return (
+    'root' in obj &&
+    typeof obj.root === 'object' &&
+    obj.root !== null &&
+    'children' in (obj.root as Record<string, unknown>)
+  )
+}
+
+/**
+ * Recursively removes system fields (id, createdAt, updatedAt) from an object.
+ * Preserves Lexical rich text structures intact since they need their internal IDs.
  */
 function removeSystemFields(obj: Record<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = {}
 
   for (const [key, value] of Object.entries(obj)) {
-    // Skip system fields at any level
-    if (key === 'id' || key === 'createdAt' || key === 'updatedAt') {
+    // Skip Payload system fields at any level
+    if (key === 'createdAt' || key === 'updatedAt') {
+      continue
+    }
+
+    // Skip 'id' only at top level (document ID), not within nested structures
+    if (key === 'id' && !('type' in obj)) {
       continue
     }
 
@@ -154,8 +172,13 @@ function removeSystemFields(obj: Record<string, unknown>): Record<string, unknow
         return item
       })
     } else if (value && typeof value === 'object') {
-      // Recursively process nested objects
-      result[key] = removeSystemFields(value as Record<string, unknown>)
+      // Preserve Lexical editor state structures intact
+      if (isLexicalState(value as Record<string, unknown>)) {
+        result[key] = value
+      } else {
+        // Recursively process nested objects
+        result[key] = removeSystemFields(value as Record<string, unknown>)
+      }
     } else {
       result[key] = value
     }

@@ -73,8 +73,10 @@ IMPORTANT RULES:
 1. Maintain the exact same formatting, including HTML tags, markdown, and special characters
 2. Do not translate proper nouns, brand names, or code/technical terms unless they have standard translations
 3. Preserve any placeholder variables like {{name}} or {0}
-4. Return ONLY a valid JSON array with the translations in the same order
-5. Each translation should correspond to the input at the same index
+4. NEVER modify URLs - keep all URLs, links, and email addresses exactly as they appear
+5. Do not add, remove, or change any hyperlinks or their destinations
+6. Return ONLY a valid JSON array with the translations in the same order
+7. Each translation should correspond to the input at the same index
 
 Input texts (JSON array):
 ${textsJson}

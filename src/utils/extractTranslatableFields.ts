@@ -185,8 +185,12 @@ function extractLexicalTextNodes(editorState: unknown): LexicalTextNode[] {
     return textNodes
   }
 
-  function traverse(node: LexicalNode, currentPath: string): void {
+  function traverse(node: LexicalNode, currentPath: string, parentType?: string): void {
     if (node.type === 'text' && typeof node.text === 'string') {
+      // Skip text nodes inside autolink nodes - these are URLs and shouldn't be translated
+      if (parentType === 'autolink') {
+        return
+      }
       textNodes.push({
         path: currentPath,
         text: node.text,
@@ -194,7 +198,7 @@ function extractLexicalTextNodes(editorState: unknown): LexicalTextNode[] {
     }
     if (node.children && Array.isArray(node.children)) {
       node.children.forEach((child, index) => {
-        traverse(child, `${currentPath}.children.${index}`)
+        traverse(child, `${currentPath}.children.${index}`, node.type)
       })
     }
   }
